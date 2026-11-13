@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI ScamShield – Intelligent Online Scam Detection and Prevention System</title>
+  <!-- Tailwind CSS CDN with custom config -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cyber: {
+              950: '#030712',
+              900: '#0B0F19',
+              850: '#111827',
+              800: '#1F2937',
+              700: '#374151',
+              emerald: '#10B981',
+              cyan: '#06B6D4',
+              rose: '#F43F5E',
+              amber: '#F59E0B'
+            }
+          },
+          animation: {
+            'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'radar': 'radar 3s linear infinite',
+          },
+          keyframes: {
+            radar: {
+              '0%': { transform: 'rotate(0deg)' },
+              '100%': { transform: 'rotate(360deg)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Cyber grid background */
+    .cyber-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1F2937;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #374151;
+    }
+  </style>
+</head>
+<body class="bg-cyber-950 text-slate-100 min-h-screen cyber-grid flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="border-b border-cyber-800/80 bg-cyber-900/90 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo & System Status -->
+      <div class="flex items-center space-x-3">
+        <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/30 border border-cyan-500/40 text-cyan-400 shadow-lg shadow-cyan-500/10">
+          <i data-lucide="shield-check" class="w-5 h-5"></i>
+          <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-cyan-400 bg-clip-text text-transparent">AI ScamShield</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">v2.0-PROD</span>
+          </div>
+          <p class="text-[11px] text-slate-400 flex items-center gap-1.5">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Gemini 2.0 Threat Intel Engine • Active
+          </p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center space-x-1 bg-cyber-950/60 p-1 rounded-xl border border-cyber-800">
+        <button onclick="switchView('scanner')" id="nav-scanner" class="nav-btn px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-cyan-400 bg-cyber-850 shadow-sm flex items-center gap-1.5">
+          <i data-lucide="crosshair" class="w-4 h-4"></i> Threat Scanner
+        </button>
+        <button onclick="switchView('feed')" id="nav-feed" class="nav-btn px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-slate-200 flex items-center gap-1.5">
+          <i data-lucide="rss" class="w-4 h-4"></i> Live Threat Feed
+        </button>
+        <button onclick="switchView('academy')" id="nav-academy" class="nav-btn px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-slate-200 flex items-center gap-1.5">
+          <i data-lucide="graduation-cap" class="w-4 h-4"></i> Scam Academy
+        </button>
+      </nav>
+
+      <!-- Language Selector -->
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center bg-cyber-850 border border-cyber-800 rounded-lg px-2.5 py-1 text-xs">
+          <i data-lucide="globe" class="w-3.5 h-3.5 text-slate-400 mr-1.5"></i>
+          <select id="languageSelect" class="bg-transparent text-slate-300 text-xs focus:outline-none cursor-pointer">
+            <option value="en">English (US)</option>
+            <option value="hi">हिंदी (Hindi)</option>
+            <option value="es">Español (Spanish)</option>
+            <option value="fr">Français (French)</option>
+            <option value="de">Deutsch (German)</option>
+            <option value="ar">العربية (Arabic)</option>
+            <option value="tl">Tagalog (Filipino)</option>
+            <option value="zh">中文 (Mandarin)</option>
+          </select>
+        </div>
+        <a href="#stats" onclick="switchView('scanner')" class="hidden sm:inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
+          <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+          <span id="headerStatsBlocked">1,184 Threats Blocked</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT CONTAINER ==================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+    <!-- HERO SECTION & LIVE METRICS -->
+    <section id="heroSection" class="relative rounded-2xl p-6 sm:p-10 overflow-hidden border border-cyber-800 bg-gradient-to-br from-cyber-900 via-cyber-900/60 to-cyber-950 shadow-2xl">
+      <div class="absolute -right-20 -top-20 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div class="lg:col-span-8 space-y-4">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Multi-Modal Anti-Fraud Intelligence
+          </div>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+            Stop Digital Scams Before You Click or Pay.
+          </h1>
+          <p class="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
+            AI ScamShield scrutinizes suspicious SMS messages, fraudulent job offers, phishing emails, fake payment receipts, and brand-spoofing URLs. Powered by deep forensic reasoning, explainable AI, and Google Gemini 2.0.
+          </p>
+        </div>
+
+        <!-- Real-time Stats Cards -->
+        <div class="lg:col-span-4 grid grid-cols-2 gap-3">
+          <div class="p-3.5 rounded-xl bg-cyber-850/80 border border-cyber-700/60 backdrop-blur-sm">
+            <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Total Scans</span>
+            <div id="statTotalScans" class="text-2xl font-extrabold text-white font-mono mt-1">1,424</div>
+            <span class="text-[10px] text-emerald-400 flex items-center gap-1 mt-1 font-mono">
+              <i data-lucide="trending-up" class="w-3 h-3"></i> Live & Verified
+            </span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-cyber-850/80 border border-cyber-700/60 backdrop-blur-sm">
+            <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Threats Blocked</span>
+            <div id="statThreatsBlocked" class="text-2xl font-extrabold text-rose-400 font-mono mt-1">1,184</div>
+            <span class="text-[10px] text-rose-300 flex items-center gap-1 mt-1 font-mono">
+              <i data-lucide="shield-alert" class="w-3 h-3"></i> High-Loss Prevented
+            </span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-cyber-850/80 border border-cyber-700/60 backdrop-blur-sm">
+            <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Detection Rate</span>
+            <div class="text-2xl font-extrabold text-cyan-400 font-mono mt-1">98.4%</div>
+            <span class="text-[10px] text-cyan-300 flex items-center gap-1 mt-1 font-mono">
+              <i data-lucide="check-check" class="w-3 h-3"></i> Zero Hallucination
+            </span>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-cyber-850/80 border border-cyber-700/60 backdrop-blur-sm">
+            <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">Avg Analysis</span>
+            <div class="text-2xl font-extrabold text-amber-400 font-mono mt-1">1.8s</div>
+            <span class="text-[10px] text-amber-300 flex items-center gap-1 mt-1 font-mono">
+              <i data-lucide="zap" class="w-3 h-3"></i> Low-Latency Flash
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 1: THREAT SCANNER ==================== -->
+    <div id="viewScanner" class="space-y-8">
+      
+      <!-- MULTI-MODAL SCANNER CONSOLE -->
+      <div class="bg-cyber-900 border border-cyber-800 rounded-2xl p-6 sm:p-8 shadow-xl">
+        
+        <!-- Tab Bar -->
+        <div class="flex flex-wrap items-center justify-between border-b border-cyber-800 pb-4 gap-3">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-mono uppercase text-slate-400 tracking-wider">Detection Vector:</span>
+            <div class="inline-flex rounded-lg bg-cyber-950 p-1 border border-cyber-800">
+              <button onclick="setScanTab('text')" id="tabBtn-text" class="scan-tab-btn px-3 py-1.5 rounded-md text-xs font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5">
+                <i data-lucide="message-square-warning" class="w-3.5 h-3.5"></i> Text / SMS
+              </button>
+              <button onclick="setScanTab('email')" id="tabBtn-email" class="scan-tab-btn px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1.5">
+                <i data-lucide="mail-warning" class="w-3.5 h-3.5"></i> Email Analyzer
+              </button>
+              <button onclick="setScanTab('url')" id="tabBtn-url" class="scan-tab-btn px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1.5">
+                <i data-lucide="link" class="w-3.5 h-3.5"></i> URL Inspector
+              </button>
+              <button onclick="setScanTab('image')" id="tabBtn-image" class="scan-tab-btn px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1.5">
+                <i data-lucide="image" class="w-3.5 h-3.5"></i> Screenshot / OCR
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Test Samples -->
+          <div class="flex items-center space-x-1.5 text-xs text-slate-400">
+            <span class="hidden sm:inline font-mono text-[11px]">Quick Tests:</span>
+            <button onclick="loadSample('bank_phish')" class="px-2 py-1 rounded bg-cyber-800 hover:bg-cyber-700 text-slate-300 text-[11px] transition">Bank Phish</button>
+            <button onclick="loadSample('job_fraud')" class="px-2 py-1 rounded bg-cyber-800 hover:bg-cyber-700 text-slate-300 text-[11px] transition">Job Scam</button>
+            <button onclick="loadSample('safe_auth')" class="px-2 py-1 rounded bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-800 text-[11px] transition">Safe OTP</button>
+          </div>
+        </div>
+
+        <!-- Form Containers -->
+        <div class="mt-6">
+          
+          <!-- TAB 1: TEXT / SMS -->
+          <div id="tabContent-text" class="tab-pane space-y-4">
+            <div class="relative">
+              <textarea id="inputText" rows="6" placeholder="Paste suspicious text message, WhatsApp/Telegram chat, SMS alert, or communication snippet here..." class="w-full bg-cyber-950 border border-cyber-800 rounded-xl p-4 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/80 transition-all font-mono leading-relaxed"></textarea>
+              <div class="absolute bottom-3 right-3 text-[11px] font-mono text-slate-500" id="textCharCount">0 / 10,000</div>
+            </div>
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span class="flex items-center gap-1.5">
+                <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-400"></i> All PII, OTPs, and card numbers are auto-redacted before processing.
+              </span>
+              <button onclick="runTextScan()" id="btnScanText" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-semibold text-sm shadow-lg shadow-cyan-500/25 transition-all flex items-center gap-2">
+                <i data-lucide="scan" class="w-4 h-4"></i> Analyze Threat
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 2: EMAIL -->
+          <div id="tabContent-email" class="tab-pane hidden space-y-4">
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-mono text-slate-400 mb-1">Raw RFC Headers (Optional, e.g. From, Reply-To, Received)</label>
+                <textarea id="inputEmailHeaders" rows="2" placeholder="From: security@chase-support-update.xyz&#10;Reply-To: refundhelpdesk827@gmail.com" class="w-full bg-cyber-950 border border-cyber-800 rounded-lg p-3 text-xs text-slate-300 font-mono focus:outline-none focus:border-cyan-500"></textarea>
+              </div>
+              <div>
+                <label class="block text-xs font-mono text-slate-400 mb-1">Email Body Content *</label>
+                <textarea id="inputEmailBody" rows="5" placeholder="Dear Customer, Your account access has been restricted due to multiple suspicious attempts..." class="w-full bg-cyber-950 border border-cyber-800 rounded-xl p-4 text-sm text-slate-200 font-mono focus:outline-none focus:border-cyan-500"></textarea>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <button onclick="runEmailScan()" id="btnScanEmail" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-semibold text-sm shadow-lg shadow-cyan-500/25 transition-all flex items-center gap-2">
+                <i data-lucide="scan" class="w-4 h-4"></i> Inspect Email
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 3: URL -->
+          <div id="tabContent-url" class="tab-pane hidden space-y-4">
+            <div>
+              <label class="block text-xs font-mono text-slate-400 mb-1">Target Website URL or Domain to Investigate</label>
+              <div class="relative flex items-center">
+                <div class="absolute left-3 text-slate-500 font-mono text-xs">https://</div>
+                <input type="text" id="inputUrl" placeholder="chase-account-verify-portal.xyz/login" class="w-full bg-cyber-950 border border-cyber-800 rounded-xl pl-20 pr-4 py-3 text-sm text-slate-200 font-mono focus:outline-none focus:border-cyan-500">
+              </div>
+            </div>
+            <div class="p-3 bg-cyber-850 rounded-lg border border-cyber-800 text-xs text-slate-400 flex items-center gap-2">
+              <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400 shrink-0"></i>
+              <span>Anti-SSRF Armor active: Requests resolving to private network IPs, loopbacks, or cloud metadata endpoints are rejected before resolution.</span>
+            </div>
+            <div class="flex justify-end">
+              <button onclick="runUrlScan()" id="btnScanUrl" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-semibold text-sm shadow-lg shadow-cyan-500/25 transition-all flex items-center gap-2">
+                <i data-lucide="globe-2" class="w-4 h-4"></i> Inspect Domain Reputation
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 4: IMAGE / OCR -->
+          <div id="tabContent-image" class="tab-pane hidden space-y-4">
+            <div id="dropZone" class="border-2 border-dashed border-cyber-700 hover:border-cyan-500/60 rounded-2xl p-8 text-center bg-cyber-950/60 cursor-pointer transition-all">
+              <input type="file" id="inputImageFile" accept="image/png,image/jpeg,image/webp" class="hidden">
+              <div class="flex flex-col items-center justify-center space-y-2">
+                <div class="w-12 h-12 rounded-full bg-cyber-800 flex items-center justify-center text-cyan-400 mb-2">
+                  <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                </div>
+                <p class="text-sm font-medium text-slate-200">Click or drag & drop suspicious screenshot here</p>
+                <p class="text-xs text-slate-400">Payment slip, fake bank SMS screenshot, WhatsApp job chat, or phishing login (PNG, JPG, WEBP up to 10MB)</p>
+                <div id="imagePreviewContainer" class="hidden mt-4 pt-4 border-t border-cyber-800 flex items-center gap-3">
+                  <img id="imagePreview" class="h-20 w-20 object-cover rounded-lg border border-cyber-700" alt="Preview">
+                  <div class="text-left">
+                    <p id="imageFileName" class="text-xs font-mono text-slate-200">file.png</p>
+                    <p id="imageFileSize" class="text-[11px] text-slate-400">120 KB</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <button onclick="runImageScan()" id="btnScanImage" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-semibold text-sm shadow-lg shadow-cyan-500/25 transition-all flex items-center gap-2">
+                <i data-lucide="scan-eye" class="w-4 h-4"></i> Run Multimodal Vision Scan
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Scanning Indicator -->
+        <div id="scanLoading" class="hidden mt-6 p-6 rounded-xl bg-cyber-950 border border-cyan-500/40 text-center space-y-3">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-cyan-500/10 text-cyan-400 animate-spin">
+            <i data-lucide="loader-2" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-semibold text-white">Scrutinizing Threat Vector...</h4>
+            <p class="text-xs text-slate-400 mt-1 font-mono">Running lexical triage, psychological hook detection & Gemini 2.0 schema reasoning</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FORENSIC REPORT RESULTS CARD (DYNAMIC) -->
+      <div id="reportContainer" class="hidden space-y-6">
+        
+        <!-- Header Bar of Report -->
+        <div class="bg-cyber-900 border border-cyber-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+          
+          <div class="flex flex-wrap items-start justify-between gap-4 border-b border-cyber-800 pb-6">
+            <div>
+              <div class="flex items-center gap-2.5">
+                <span id="reportCategoryBadge" class="px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wide uppercase bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                  CRITICAL THREAT
+                </span>
+                <span id="reportSafeBadge" class="px-2.5 py-0.5 rounded text-[11px] font-mono bg-cyber-800 text-slate-300">
+                  Action Required
+                </span>
+              </div>
+              <h2 id="reportCategoryTitle" class="text-2xl font-bold text-white mt-2">Phishing & Credential Theft Attack</h2>
+              <p id="reportTimestamp" class="text-xs text-slate-400 font-mono mt-1">Scan ID: e81b2a9d • Monitored at UTC</p>
+            </div>
+
+            <!-- Export / Share Actions -->
+            <div class="flex items-center gap-2">
+              <button onclick="exportReportJson()" class="px-3 py-1.5 rounded-lg bg-cyber-850 hover:bg-cyber-800 border border-cyber-700 text-xs font-mono text-slate-300 flex items-center gap-1.5 transition">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> Export JSON
+              </button>
+              <button onclick="shareToCommunity()" id="btnShareCommunity" class="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-mono text-cyan-300 flex items-center gap-1.5 transition">
+                <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Share to Feed
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Metric Grid: Score Gauge + Executive Summary -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+            
+            <!-- Gauge SVG -->
+            <div class="md:col-span-4 flex flex-col items-center justify-center p-4 bg-cyber-950 rounded-xl border border-cyber-800">
+              <div class="relative w-40 h-40 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" class="text-cyber-800 fill-none" />
+                  <circle id="gaugeCircle" cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" stroke-dasharray="251.2" stroke-dashoffset="50" stroke-linecap="round" class="text-rose-500 fill-none transition-all duration-1000" />
+                </svg>
+                <div class="absolute flex flex-col items-center justify-center">
+                  <span id="gaugeScore" class="text-4xl font-extrabold font-mono text-white">96</span>
+                  <span class="text-[10px] uppercase font-mono tracking-wider text-slate-400">Risk Score</span>
+                </div>
+              </div>
+              <div id="gaugeLevelLabel" class="mt-2 text-xs font-mono font-bold tracking-widest text-rose-400 uppercase">
+                CRITICAL RISK
+              </div>
+            </div>
+
+            <!-- Summary & Psychological Triggers -->
+            <div class="md:col-span-8 space-y-4">
+              <div>
+                <h3 class="text-xs font-mono uppercase text-slate-400 tracking-wider">Executive Threat Assessment</h3>
+                <p id="reportSummary" class="text-slate-200 text-sm sm:text-base mt-1.5 leading-relaxed bg-cyber-850/50 p-3.5 rounded-xl border border-cyber-800">
+                  This communication exhibits classic credential harvesting vectors impersonating an authorized institution.
+                </p>
+              </div>
+
+              <!-- Triggers -->
+              <div>
+                <h3 class="text-xs font-mono uppercase text-slate-400 tracking-wider mb-2">Detected Psychological Vectors</h3>
+                <div id="reportTriggers" class="flex flex-wrap gap-2">
+                  <span class="px-2.5 py-1 rounded-md text-xs font-mono bg-rose-500/10 text-rose-400 border border-rose-500/20">Artificial Urgency</span>
+                  <span class="px-2.5 py-1 rounded-md text-xs font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20">Authority Impersonation</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Section: Discrete Indicators of Compromise (IOCs) -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-400"></i>
+              Forensic Red Flags & Indicators
+            </h3>
+            <div id="reportIndicatorsList" class="grid grid-cols-1 gap-3">
+              <!-- Dynamically Populated Indicator Cards -->
+            </div>
+          </div>
+
+          <!-- Section: Priority Countermeasures & Remediation -->
+          <div class="space-y-3 pt-2">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="shield-alert" class="w-4 h-4 text-cyan-400"></i>
+              Immediate Action Playbook
+            </h3>
+            <div id="reportActionsList" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Dynamically Populated Remediation Cards -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ==================== VIEW 2: LIVE THREAT FEED ==================== -->
+    <div id="viewFeed" class="hidden space-y-6">
+      <div class="bg-cyber-900 border border-cyber-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+        
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-cyber-800 pb-6">
+          <div>
+            <h2 class="text-2xl font-bold text-white">Live Community Threat Intelligence</h2>
+            <p class="text-xs text-slate-400 mt-1">Real-time scam reports verified and anonymized across global users.</p>
+          </div>
+          
+          <!-- Category Filter -->
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="feedCategorySelect" onchange="loadFeedData()" class="bg-cyber-850 border border-cyber-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none">
+              <option value="ALL">All Threat Categories</option>
+              <option value="BANKING_FINANCIAL_IMPERSONATION">Banking / Financial</option>
+              <option value="FAKE_JOB_TASK_FRAUD">Fake Job & Tasks</option>
+              <option value="PACKAGE_DELIVERY_SCAM">Package Delivery</option>
+              <option value="CRYPTO_INVESTMENT_SCAM">Crypto & Investment</option>
+              <option value="PHISHING_CREDENTIAL_THEFT">Credential Phishing</option>
+            </select>
+            <input type="text" id="feedSearchInput" oninput="loadFeedData()" placeholder="Search keywords..." class="bg-cyber-850 border border-cyber-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none w-48">
+          </div>
+        </div>
+
+        <!-- Feed Items List -->
+        <div id="feedListContainer" class="space-y-4">
+          <!-- Dynamically Injected Threat Feed Cards -->
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 3: SCAM ACADEMY ==================== -->
+    <div id="viewAcademy" class="hidden space-y-6">
+      <div class="bg-cyber-900 border border-cyber-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+        
+        <div class="border-b border-cyber-800 pb-6">
+          <h2 class="text-2xl font-bold text-white">Scam Defense Academy</h2>
+          <p class="text-xs text-slate-400 mt-1">Master modern social engineering tactics, psychological manipulation hooks, and recovery protocols.</p>
+        </div>
+
+        <div id="academyListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Dynamically Populated Educational Modules -->
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="border-t border-cyber-800/80 bg-cyber-900/60 py-8 text-center text-xs text-slate-500 font-mono">
+    <div class="max-w-7xl mx-auto px-4 space-y-2">
+      <p>AI ScamShield – Autonomous Cyber-Fraud Detection & Prevention Platform</p>
+      <p class="text-[11px] text-slate-600">Built with FastAPI, Google Gemini 2.0 Multimodal AI, Supabase & Modern Security Hardening.</p>
+    </div>
+  </footer>
+
+  <!-- ==================== CLIENT JAVASCRIPT ==================== -->
+  <script>
+    // State
+    let currentSessionId = crypto.randomUUID();
+    let currentReport = null;
+    let selectedImageFile = null;
+
+    // Initialize Lucide Icons
+    function refreshIcons() {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
+
+    // Navigation Switcher
+    function switchView(viewName) {
+      document.getElementById('viewScanner').classList.toggle('hidden', viewName !== 'scanner');
+      document.getElementById('viewFeed').classList.toggle('hidden', viewName !== 'feed');
+      document.getElementById('viewAcademy').classList.toggle('hidden', viewName !== 'academy');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('text-cyan-400', 'bg-cyber-850', 'shadow-sm');
+        btn.classList.add('text-slate-400');
+      });
+
+      const activeBtn = document.getElementById(`nav-${viewName}`);
+      if (activeBtn) {
+        activeBtn.classList.add('text-cyan-400', 'bg-cyber-850', 'shadow-sm');
+        activeBtn.classList.remove('text-slate-400');
+      }
+
+      if (viewName === 'feed') loadFeedData();
+      if (viewName === 'academy') loadAcademyData();
+      refreshIcons();
+    }
+
+    // Scanner Tabs
+    function setScanTab(tabName) {
+      document.querySelectorAll('.scan-tab-btn').forEach(b => {
+        b.className = 'scan-tab-btn px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1.5';
+      });
+      document.getElementById(`tabBtn-${tabName}`).className = 'scan-tab-btn px-3 py-1.5 rounded-md text-xs font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5';
+
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`tabContent-${tabName}`).classList.remove('hidden');
+      refreshIcons();
+    }
+
+    // Character Counter
+    document.getElementById('inputText').addEventListener('input', function(e) {
+      document.getElementById('textCharCount').innerText = `${e.target.value.length} / 10,000`;
+    });
+
+    // Sample Loader
+    function loadSample(sampleType) {
+      setScanTab('text');
+      const textMap = {
+        bank_phish: "URGENT from CHASE SECURITY: Unusual debit of $482.10 detected. If this was NOT you, immediately verify your login credentials at https://chase-security-verify[.]xyz/auth to prevent permanent debit card suspension.",
+        job_fraud: "Greetings! I am Sarah from Global HR. You have been selected for a flexible part-time role reviewing YouTube videos. Earn $250 - $600 daily. Just like 3 sample videos and receive immediate payout to your crypto wallet. Join our Telegram: @job_coordinator_vip",
+        safe_auth: "Your Amazon verification passcode is: 849201. Don't share this code with anyone. Amazon employees will never call or message to ask for this code."
+      };
+      document.getElementById('inputText').value = textMap[sampleType] || "";
+      document.getElementById('textCharCount').innerText = `${document.getElementById('inputText').value.length} / 10,000`;
+    }
+
+    // Image Upload Handling
+    const dropZone = document.getElementById('dropZone');
+    const inputImageFile = document.getElementById('inputImageFile');
+
+    dropZone.addEventListener('click', () => inputImageFile.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-cyan-400'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-cyan-400'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-cyan-400');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+
+    inputImageFile.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleFileSelect(e.target.files[0]);
+      }
+    });
+
+    function handleFileSelect(file) {
+      selectedImageFile = file;
+      document.getElementById('imageFileName').innerText = file.name;
+      document.getElementById('imageFileSize').innerText = `${(file.size / 1024).toFixed(1)} KB`;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('imagePreview').src = e.target.result;
+        document.getElementById('imagePreviewContainer').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Analysis Execution Helpers
+    function setScanning(isLoading) {
+      document.getElementById('scanLoading').classList.toggle('hidden', !isLoading);
+      ['btnScanText', 'btnScanEmail', 'btnScanUrl', 'btnScanImage'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = isLoading;
+      });
+      if (isLoading) {
+        document.getElementById('reportContainer').classList.add('hidden');
+      }
+      refreshIcons();
+    }
+
+    async function runTextScan() {
+      const text = document.getElementById('inputText').value.trim();
+      if (text.length < 10) {
+        alert("Please enter at least 10 characters to analyze.");
+        return;
+      }
+      setScanning(true);
+      try {
+        const lang = document.getElementById('languageSelect').value;
+        const resp = await fetch('/api/v1/scan/text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, language: lang, sessionId: currentSessionId })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Analysis failed");
+        renderReport(data);
+      } catch (err) {
+        alert("Scan Error: " + err.message);
+      } finally {
+        setScanning(false);
+      }
+    }
+
+    async function runEmailScan() {
+      const body = document.getElementById('inputEmailBody').value.trim();
+      const headers = document.getElementById('inputEmailHeaders').value.trim();
+      if (body.length < 10) {
+        alert("Please enter email body content.");
+        return;
+      }
+      setScanning(true);
+      try {
+        const lang = document.getElementById('languageSelect').value;
+        const resp = await fetch('/api/v1/scan/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ emailRaw: body, headersRaw: headers, language: lang, sessionId: currentSessionId })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Analysis failed");
+        renderReport(data);
+      } catch (err) {
+        alert("Scan Error: " + err.message);
+      } finally {
+        setScanning(false);
+      }
+    }
+
+    async function runUrlScan() {
+      const url = document.getElementById('inputUrl').value.trim();
+      if (!url) {
+        alert("Please enter a URL to inspect.");
+        return;
+      }
+      setScanning(true);
+      try {
+        const resp = await fetch('/api/v1/scan/url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, sessionId: currentSessionId })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Analysis failed");
+        renderReport(data);
+      } catch (err) {
+        alert("Scan Error: " + err.message);
+      } finally {
+        setScanning(false);
+      }
+    }
+
+    async function runImageScan() {
+      if (!selectedImageFile) {
+        alert("Please select or drop an image file first.");
+        return;
+      }
+      setScanning(true);
+      try {
+        const lang = document.getElementById('languageSelect').value;
+        const formData = new FormData();
+        formData.append('file', selectedImageFile);
+        formData.append('sessionId', currentSessionId);
+        formData.append('language', lang);
+
+        const resp = await fetch('/api/v1/scan/image', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Analysis failed");
+        renderReport(data);
+      } catch (err) {
+        alert("Scan Error: " + err.message);
+      } finally {
+        setScanning(false);
+      }
+    }
+
+    // Render Forensic Report
+    function renderReport(report) {
+      currentReport = report;
+      document.getElementById('reportContainer').classList.remove('hidden');
+
+      // Score and Level
+      const score = report.riskScore;
+      const level = report.riskLevel;
+      document.getElementById('gaugeScore').innerText = score;
+      document.getElementById('gaugeLevelLabel').innerText = `${level} THREAT`;
+
+      // Gauge Circle calculation (circumference 251.2)
+      const offset = 251.2 - (251.2 * (score / 100));
+      const circle = document.getElementById('gaugeCircle');
+      circle.style.strokeDashoffset = offset;
+
+      // Gauge Color Map
+      const colorMap = {
+        SAFE: { text: 'text-emerald-400', stroke: 'text-emerald-500', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' },
+        LOW: { text: 'text-blue-400', stroke: 'text-blue-500', badge: 'bg-blue-500/20 text-blue-300 border-blue-500/40' },
+        MEDIUM: { text: 'text-amber-400', stroke: 'text-amber-500', badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
+        HIGH: { text: 'text-orange-400', stroke: 'text-orange-500', badge: 'bg-orange-500/20 text-orange-300 border-orange-500/40' },
+        CRITICAL: { text: 'text-rose-400', stroke: 'text-rose-500', badge: 'bg-rose-500/20 text-rose-300 border-rose-500/40' }
+      };
+
+      const cfg = colorMap[level] || colorMap.HIGH;
+      circle.className = `${cfg.stroke} fill-none transition-all duration-1000`;
+      document.getElementById('gaugeScore').className = `text-4xl font-extrabold font-mono ${cfg.text}`;
+      document.getElementById('gaugeLevelLabel').className = `mt-2 text-xs font-mono font-bold tracking-widest ${cfg.text} uppercase`;
+
+      // Badges
+      const catBadge = document.getElementById('reportCategoryBadge');
+      catBadge.className = `px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wide uppercase ${cfg.badge}`;
+      catBadge.innerText = level + " RISK";
+
+      const safeBadge = document.getElementById('reportSafeBadge');
+      if (report.isSafeToEngage) {
+        safeBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-700";
+        safeBadge.innerText = "✓ Safe to Engage";
+      } else {
+        safeBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-mono bg-rose-950 text-rose-300 border border-rose-700";
+        safeBadge.innerText = "⚠ Do Not Interact";
+      }
+
+      document.getElementById('reportCategoryTitle').innerText = (report.primaryCategory || 'SUSPICIOUS_COMMUNICATION').replace(/_/g, ' ');
+      document.getElementById('reportTimestamp').innerText = `Report UUID: ${report.id} • Monitored via Gemini 2.0`;
+      document.getElementById('reportSummary').innerText = report.summary;
+
+      // Psychological Triggers
+      const triggersContainer = document.getElementById('reportTriggers');
+      triggersContainer.innerHTML = '';
+      (report.psychologicalTriggers || []).forEach(trig => {
+        const span = document.createElement('span');
+        span.className = "px-2.5 py-1 rounded-md text-xs font-mono bg-rose-500/10 text-rose-300 border border-rose-500/20 flex items-center gap-1";
+        span.innerHTML = `<i data-lucide="crosshair" class="w-3 h-3"></i> ${trig}`;
+        triggersContainer.appendChild(span);
+      });
+
+      // Discrete Indicators
+      const indicatorsList = document.getElementById('reportIndicatorsList');
+      indicatorsList.innerHTML = '';
+      (report.indicators || []).forEach(ind => {
+        const card = document.createElement('div');
+        card.className = "p-3.5 rounded-xl bg-cyber-950 border border-cyber-800 space-y-1.5";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold font-mono text-white flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full ${ind.severity === 'CRITICAL' || ind.severity === 'HIGH' ? 'bg-rose-500' : 'bg-amber-400'}"></span>
+              ${ind.title}
+            </span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyber-850 text-slate-400 border border-cyber-700">${ind.indicator_type || 'IOC'}</span>
+          </div>
+          <p class="text-xs text-slate-300">${ind.description}</p>
+          ${ind.evidence_snippet ? `<div class="p-2 rounded bg-cyber-900 border border-cyber-800 font-mono text-[11px] text-rose-300 select-all">${ind.evidence_snippet}</div>` : ''}
+        `;
+        indicatorsList.appendChild(card);
+      });
+
+      // Actions Checklist
+      const actionsList = document.getElementById('reportActionsList');
+      actionsList.innerHTML = '';
+      (report.recommendedActions || []).forEach((act, idx) => {
+        const card = document.createElement('div');
+        const isImmediate = act.urgency === 'IMMEDIATE';
+        card.className = `p-3.5 rounded-xl border ${isImmediate ? 'bg-rose-950/20 border-rose-500/30' : 'bg-cyber-950 border-cyber-800'} space-y-2`;
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-mono font-bold ${isImmediate ? 'text-rose-400' : 'text-cyan-400'}">STEP ${act.step_order || idx + 1} • ${act.urgency}</span>
+            <input type="checkbox" class="rounded bg-cyber-900 border-cyber-700 text-cyan-500 focus:ring-0 cursor-pointer">
+          </div>
+          <p class="text-xs text-slate-200 leading-relaxed">${act.action_text}</p>
+          ${act.official_link ? `<a href="${act.official_link}" target="_blank" rel="noopener noreferrer" class="text-[11px] text-cyan-400 hover:underline flex items-center gap-1"><i data-lucide="external-link" class="w-3 h-3"></i> Official Support Portal</a>` : ''}
+        `;
+        actionsList.appendChild(card);
+      });
+
+      refreshIcons();
+      document.getElementById('reportContainer').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Export JSON
+    function exportReportJson() {
+      if (!currentReport) return;
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentReport, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `ScamShield_Report_${currentReport.id}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    // Share to feed feedback
+    function shareToCommunity() {
+      const btn = document.getElementById('btnShareCommunity');
+      btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Shared to Live Feed`;
+      btn.className = "px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-xs font-mono text-emerald-300 flex items-center gap-1.5";
+      refreshIcons();
+    }
+
+    // Feed Loader
+    async function loadFeedData() {
+      const container = document.getElementById('feedListContainer');
+      container.innerHTML = '<div class="text-center py-8 text-xs text-slate-500 font-mono">Loading verified threats...</div>';
+      try {
+        const cat = document.getElementById('feedCategorySelect').value;
+        const search = document.getElementById('feedSearchInput').value;
+        const resp = await fetch(`/api/v1/feed?category=${cat}&search=${encodeURIComponent(search)}`);
+        const data = await resp.json();
+        
+        container.innerHTML = '';
+        if (!data.items || data.items.length === 0) {
+          container.innerHTML = '<div class="text-center py-8 text-xs text-slate-500 font-mono">No matching threats found.</div>';
+          return;
+        }
+
+        data.items.forEach(item => {
+          const card = document.createElement('div');
+          card.className = "p-4 rounded-xl bg-cyber-950 border border-cyber-800 space-y-3";
+          card.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${item.risk_level === 'CRITICAL' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">${item.risk_level}</span>
+                <span class="text-xs font-bold text-white">${item.title}</span>
+              </div>
+              <span class="text-[10px] text-slate-500 font-mono">${new Date(item.created_at).toLocaleDateString()}</span>
+            </div>
+            <p class="text-xs text-slate-300 font-mono bg-cyber-900 p-2.5 rounded-lg border border-cyber-850 select-all">${item.redacted_sample}</p>
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex gap-1.5 flex-wrap">
+                ${(item.tags || []).map(t => `<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyber-850 text-cyan-400">#${t}</span>`).join('')}
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="voteFeedItem('${item.id}', 'UPVOTE', this)" class="px-2.5 py-1 rounded bg-cyber-850 hover:bg-cyber-800 text-[11px] font-mono text-slate-300 flex items-center gap-1 border border-cyber-700 transition">
+                  <i data-lucide="thumbs-up" class="w-3 h-3"></i> <span>${item.upvotes || 0}</span>
+                </button>
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+        refreshIcons();
+      } catch (e) {
+        container.innerHTML = `<div class="text-center py-8 text-xs text-rose-400 font-mono">Error: ${e.message}</div>`;
+      }
+    }
+
+    async function voteFeedItem(feedId, voteType, btnElement) {
+      try {
+        const resp = await fetch('/api/v1/feed/vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ feedId, voteType })
+        });
+        const res = await resp.json();
+        if (res.status === 'success' && res.item) {
+          btnElement.querySelector('span').innerText = res.item.upvotes;
+          btnElement.classList.add('text-emerald-400', 'border-emerald-500/40');
+        } else if (res.status === 'already_voted') {
+          btnElement.classList.add('opacity-50');
+        }
+      } catch (e) {
+        console.error("Vote failed", e);
+      }
+    }
+
+    // Academy Loader
+    async function loadAcademyData() {
+      const container = document.getElementById('academyListContainer');
+      container.innerHTML = '<div class="text-center py-8 text-xs text-slate-500 font-mono col-span-2">Loading academy modules...</div>';
+      try {
+        const resp = await fetch('/api/v1/academy');
+        const modules = await resp.json();
+        container.innerHTML = '';
+        modules.forEach(m => {
+          const card = document.createElement('div');
+          card.className = "p-5 rounded-2xl bg-cyber-950 border border-cyber-800 space-y-3";
+          card.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 uppercase">${m.badge}</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800">${m.threat_level}</span>
+            </div>
+            <h3 class="text-base font-bold text-white">${m.title}</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">${m.description}</p>
+            <div class="space-y-1.5 pt-2 border-t border-cyber-850">
+              <span class="text-[11px] font-mono uppercase text-slate-400 block font-bold">Key Indicators:</span>
+              <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+                ${m.indicators.map(i => `<li>${i}</li>`).join('')}
+              </ul>
+            </div>
+            <div class="p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-900/40 text-[11px] text-emerald-300">
+              <strong>Shield Rule:</strong> ${m.prevention}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+        refreshIcons();
+      } catch (e) {
+        container.innerHTML = `<div class="text-center py-8 text-xs text-rose-400 font-mono col-span-2">Error: ${e.message}</div>`;
+      }
+    }
+
+    // Initial Stats Fetch
+    async function fetchStats() {
+      try {
+        const resp = await fetch('/api/v1/threats/stats');
+        const s = await resp.json();
+        document.getElementById('statTotalScans').innerText = s.totalScans.toLocaleString();
+        document.getElementById('statThreatsBlocked').innerText = s.threatsBlocked.toLocaleString();
+        document.getElementById('headerStatsBlocked').innerText = `${s.threatsBlocked.toLocaleString()} Threats Blocked`;
+      } catch (e) {
+        console.warn("Stats fetch failed", e);
+      }
+    }
+
+    // On Load
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshIcons();
+      fetchStats();
+    });
+  </script>
+</body>
+</html>

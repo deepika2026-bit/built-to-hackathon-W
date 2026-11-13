@@ -1,0 +1,77 @@
+[
+  {
+    "id": "3a765677-f97a-43bc-9a7c-ff587adc7e72",
+    "analysis_id": "54976937-fa72-43db-a33b-614388f3922a",
+    "title": "Reported Phishing Credential Theft",
+    "scam_category": "PHISHING_CREDENTIAL_THEFT",
+    "risk_level": "CRITICAL",
+    "risk_score": 90,
+    "redacted_sample": "URGENT: Your Netflix membership is on hold. Update billing at http://netflix-billing-update.top to prevent immediate cancellation.",
+    "upvotes": 1,
+    "false_positive_reports": 0,
+    "is_verified_by_analyst": false,
+    "tags": [
+      "Artificial Urgency",
+      "Fear of Loss",
+      "Impersonation Authority"
+    ],
+    "created_at": "2026-11-13T10:08:11.988348+00:00",
+    "updated_at": "2026-11-13T10:08:11.988365+00:00"
+  },
+  {
+    "id": "4266d33a-81d0-465a-8959-6b9d607515b7",
+    "title": "USPS 'Package Delivery Failure' Smishing Attempt",
+    "scam_category": "PACKAGE_DELIVERY_SCAM",
+    "risk_level": "HIGH",
+    "risk_score": 88,
+    "redacted_sample": "USPS: Your package was withheld due to invalid zip code. Please verify details at http://usps-delivery-redirection[.]xyz within 12 hours or item will be returned.",
+    "upvotes": 42,
+    "false_positive_reports": 1,
+    "is_verified_by_analyst": true,
+    "tags": [
+      "USPS",
+      "Smishing",
+      "UrgencyHook",
+      "FakeDomain"
+    ],
+    "created_at": "2026-11-13T10:08:02.319845+00:00",
+    "updated_at": "2026-11-13T10:08:02.319859+00:00"
+  },
+  {
+    "id": "1708d29c-a9f1-41b4-8eff-812f6e25b57a",
+    "title": "Telegram YouTube 'Like & Subscribe' Daily Salary Fraud",
+    "scam_category": "FAKE_JOB_TASK_FRAUD",
+    "risk_level": "CRITICAL",
+    "risk_score": 96,
+    "redacted_sample": "Earn $300-$800 daily simply subscribing to YouTube videos. Complete 3 trial tasks to receive instant USDT into your Binance wallet. Contact HR on Telegram @task_director.",
+    "upvotes": 67,
+    "false_positive_reports": 0,
+    "is_verified_by_analyst": true,
+    "tags": [
+      "TelegramScam",
+      "JobFraud",
+      "PigButchering",
+      "USDT"
+    ],
+    "created_at": "2026-11-13T10:08:02.319870+00:00",
+    "updated_at": "2026-11-13T10:08:02.319872+00:00"
+  },
+  {
+    "id": "ccbec581-b811-4446-b80a-659ed862e66b",
+    "title": "Urgent Bank Account Suspension Threat",
+    "scam_category": "BANKING_FINANCIAL_IMPERSONATION",
+    "risk_level": "CRITICAL",
+    "risk_score": 98,
+    "redacted_sample": "Alert: Unusual activity detected on your checking account. Immediate KYC verification required to prevent permanent account closure. Click https://chase-security-kyc[.]top",
+    "upvotes": 89,
+    "false_positive_reports": 0,
+    "is_verified_by_analyst": true,
+    "tags": [
+      "BankingPhish",
+      "KYCAlert",
+      "PanicTrigger"
+    ],
+    "created_at": "2026-11-13T10:08:02.319880+00:00",
+    "updated_at": "2026-11-13T10:08:02.319882+00:00"
+  }
+]
